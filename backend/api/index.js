@@ -42,7 +42,7 @@ app.use(bodyParser.json());
 
 // Database connection config for Supabase PostgreSQL
 const dbConfig = {
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:Jain%402514@db.ksxspvjbgnwajmurneyg.supabase.co:5432/postgres',
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres.ksxspvjbgnwajmurneyg:Jain25143424@aws-0-ap-south-1.pooler.supabase.com:6543/postgres',
   ssl: { rejectUnauthorized: false } // Required for Supabase connection
 };
 
