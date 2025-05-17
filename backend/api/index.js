@@ -9,8 +9,13 @@ require('dotenv').config();
 // Initialize Express app
 const app = express();
 
-// Middleware
-app.use(cors());
+const corsOptions = {
+  origin: ['https://business-agent-7wtv.vercel.app/', 'http://localhost:3000'],
+  methods: ['GET', 'POST'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 // Database connection config for Supabase PostgreSQL
