@@ -63,9 +63,7 @@
       
       try {
         // API URL that works in both development and production
-        const apiUrl = process.env.NODE_ENV === 'production' 
-          ? '/api/query' 
-          : 'http://localhost:5000/api/query';
+        const apiUrl = 'https://business-agent-mk5g.vercel.app/api/query';
           
         const response = await fetch(apiUrl, {
           method: 'POST',
