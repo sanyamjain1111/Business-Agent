@@ -400,6 +400,18 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', database: 'postgresql' });
 });
 
+// Add a root route handler
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Query SQL API is running',
+    endpoints: {
+      health: '/health',
+      query: '/api/query'
+    },
+    version: '1.0.0'
+  });
+});
+
 // Load schema on startup for non-serverless environments
 if (process.env.NODE_ENV !== 'production') {
   getDatabaseSchema().then(() => {
