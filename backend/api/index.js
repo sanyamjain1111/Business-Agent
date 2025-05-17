@@ -1,7 +1,7 @@
 // api/index.js (Vercel serverless entry point)
 const express = require('express');
 const cors = require('cors');
-const { Pool } = require('pg'); // Change from mysql2 to pg
+const { Pool } = require('pg');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const bodyParser = require('body-parser');
 require('dotenv').config();
@@ -9,14 +9,32 @@ require('dotenv').config();
 // Initialize Express app
 const app = express();
 
+// Updated CORS configuration with more permissive settings for development
 const corsOptions = {
-  origin: [
-    'https://business-agent-7wtv.vercel.app', // Your frontend URL (without trailing slash)
-    'http://localhost:3000', // Local development frontend
-    'https://business-agent-mk5g.vercel.app' // Your backend URL (without trailing slash)
-  ],
-  methods: ['GET', 'POST'],
-  credentials: true
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl requests)
+    if(!origin) return callback(null, true);
+    
+    // List of allowed origins
+    const allowedOrigins = [
+      'https://business-agent-7wtv.vercel.app',
+      'http://localhost:3000',
+      'https://business-agent-mk5g.vercel.app',
+      // Add more origins if needed
+    ];
+    
+    // Check if the origin is allowed
+    if(allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      console.log("Blocked origin:", origin);
+      callback(null, true); // During development, allow all origins
+    }
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 };
 
 app.use(cors(corsOptions));
@@ -365,13 +383,16 @@ Please provide a clear, natural language summary of what these results mean in b
 }
 
 // API endpoint to process natural language queries
-app.post('/query', async (req, res) => {
+app.post('/api/query', async (req, res) => {
+  console.log("Query endpoint called");
   try {
     const { query } = req.body;
     
     if (!query) {
       return res.status(400).json({ error: 'Query is required' });
     }
+    
+    console.log("Received query:", query);
     
     // Generate SQL from natural language query
     const generatedData = await generateSQL(query);
@@ -383,8 +404,12 @@ app.post('/query', async (req, res) => {
       return res.status(500).json({ error: 'Failed to generate SQL query' });
     }
     
+    console.log("Generated SQL:", sqlQuery);
+    
     // Execute the SQL query
     const results = await executeQuery(sqlQuery);
+    
+    console.log("Query results:", results.length, "rows");
     
     // Generate natural language summary
     const summary = await generateSummary(query, sqlQuery, results, explanation, visualizationType);
@@ -404,21 +429,33 @@ app.post('/query', async (req, res) => {
   }
 });
 
-// Simple health check endpoint
-app.get('/health', (req, res) => {
+// Updated health check endpoint - more consistent with path structure
+app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', database: 'postgresql' });
 });
 
-// Add a root route handler
+// Updated root route handler
 app.get('/', (req, res) => {
   res.json({
     message: 'Query SQL API is running',
     endpoints: {
-      health: '/health',
+      health: '/api/health',
       query: '/api/query'
     },
     version: '1.0.0'
   });
+});
+
+// For Vercel, ensure the API path matches what the frontend is expecting
+app.post('/query', (req, res) => {
+  // Redirect to the properly namespaced endpoint
+  console.log("Received request at /query, redirecting to /api/query");
+  app.handle({ 
+    method: 'POST', 
+    url: '/api/query', 
+    body: req.body, 
+    headers: req.headers 
+  }, res);
 });
 
 // Load schema on startup for non-serverless environments
