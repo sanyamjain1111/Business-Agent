@@ -10,7 +10,11 @@ require('dotenv').config();
 const app = express();
 
 const corsOptions = {
-  origin: ['https://business-agent-7wtv.vercel.app/', 'http://localhost:3000'],
+  origin: [
+    'https://business-agent-7wtv.vercel.app', // Your frontend URL (without trailing slash)
+    'http://localhost:3000', // Local development frontend
+    'https://business-agent-mk5g.vercel.app' // Your backend URL (without trailing slash)
+  ],
   methods: ['GET', 'POST'],
   credentials: true
 };
