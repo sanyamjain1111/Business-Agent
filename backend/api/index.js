@@ -365,7 +365,7 @@ Please provide a clear, natural language summary of what these results mean in b
 }
 
 // API endpoint to process natural language queries
-app.post('/api/query', async (req, res) => {
+app.post('/query', async (req, res) => {
   try {
     const { query } = req.body;
     
